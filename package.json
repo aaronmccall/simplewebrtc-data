@@ -1,0 +1,29 @@
+{
+  "name": "simplewebrtc-data",
+  "version": "0.0.0",
+  "description": "Ready-to-use WebRTC data channels via webrtc-data and signalmaster",
+  "main": "\"lib/simplewebrtc-data.js",
+  "scripts": {
+    "test": "jasmine-node tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:aaronmccall/simplewebrtc-data.git"
+  },
+  "keywords": [
+    "webrtc",
+    "data-channels",
+    "peer-to-peer"
+  ],
+  "author": "Aaron McCall",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aaronmccall/simplewebrtc-data/issues"
+  },
+  "dependencies": {
+    "mockconsole": "0.0.1",
+    "webrtcsupport": "~0.7.0",
+    "wildemitter": "0.0.5",
+    "webrtc-data": "0.0.2"
+  }
+}

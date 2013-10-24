@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SimpleWebRTC Data Demo</title>
+        <style type="text/css">
+        	body {
+        		margin: 0 100px;
+        	}
+        	.chat_container {
+        		height: 300px;
+        		overflow: scroll;
+        	}
+
+        	.active .room_form {
+        		display: none;
+        	}
+
+        	.message span {
+        		font-weight: 600;
+        	}
+        </style>
+    </head>
+    <body>
+        <h1 id="title">Start/Join a chat room</h1>
+        <p class="join_link"></p>
+        <form class="room_form">
+        	<label id="room_label" for="room">Room:</label><input id="room">
+        	<label id="nick_label" for="nick">Nickname:</label><input id="nick">
+        	<button id="room_btn">Create/Join Room</button>
+        </form>
+
+        <h2>Chat</h2>
+        <div class="chat_container">
+        	<ul id="messages"></ul>
+        </div>
+        <form id="chat_form">
+        	<label>Type messages here (press Enter to send)</label><textarea></textarea>
+        </form>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="socket.io.js"></script>
+        <script src="simplewebrtc-data.bundle.js"></script>
+        <script>
+        	// grab the room from the URL
+            var room, nick, query,
+            	$messages = $('#messages');
+
+        	if (location.search) query = location.search.split('?')[1].split('&');
+        	if (query && query.length) {
+        		for (var i=0, l=query.length, item, key, val; i<l; i++) {
+        			item = query[i] && query[i].indexOf('=') !== -1 ? query[i].split('=') : null;
+        			if (item) {
+        				key = item.shift();
+        				if (item.length) val = item.shift();
+        				if (key === 'room') room = val;
+        				if (key === 'nick') nick = val;
+        			}
+        		}
+        	}
+        	function renderChat(message) {
+        		$messages.append($('<li/>').addClass('message').html('<span>' + message.from + ':</span> ' + message.msg));
+        	}
+        	if (room) {
+        		$('#room, #room_label').hide();
+        		$('#room_btn').text('Set Nickname');
+        		$('h1').text('Chatting in ' + room + ' as ' + (nick||'[Anonymous]'));
+        	}
+            var webrtc = new SimpleWebRTCData({debug: true});
+
+            webrtc.on('readyToCall', function () {
+            	if (room) webrtc.joinRoom(room);
+            });
+
+            webrtc.on('data', function (message) {
+            	console.log('message ' + message);
+            	renderChat(message.payload);
+            });
+
+            function joinRoom(name, nick) {
+            	$('body').addClass('active');
+            	$('h1').text('Chatting in ' + room + ' as ' + nick);
+            	$('.join_link').text('Others can join here: ' + location.href);
+            }
+
+            if (room && nick) {
+            	joinRoom(room, nick);
+            } else {
+            	$('.room_form').submit(function (e) {
+            		var room_set = !!room;
+            		room = $(this).find('#room').val() || room;
+        			nick = $(this).find('#nick').val();
+            		console.log('room name is ' + room);
+
+            		if (!room_set) {
+            			webrtc.createRoom(room, function (err, name) {
+	            			console.log(' create room cb', arguments);
+	                    
+	                        var newUrl = location.pathname + '?room=' + name;
+	                        if (!err) {
+	                            history.replaceState({foo: 'bar'}, null, newUrl);
+	                            joinRoom(room, nick);
+	                        } else {
+	                            console.log(err);
+	                            if (err === 'taken') {
+	                            	webrtc.joinRoom(room)
+	                            }
+	                        }
+	            		});
+            		} else {
+            			joinRoom(room, nick);
+            			webrtc.joinRoom(room);
+            		}
+            		
+            		return false;
+            	});
+            }
+
+            $('textarea').on('keydown', function (e) {
+            	if (e.keyCode && e.keyCode === 13) {
+            		var $this = $(this),
+            			msg = $this.val(),
+            			payload = {from: nick, msg: msg};
+            		renderChat(payload);
+            		$this.val('');
+            		webrtc.sendToAll('data', payload);
+            		return false;
+            	}
+            });
+        </script>
+    </body>
+</html>
