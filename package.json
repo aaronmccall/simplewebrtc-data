@@ -1,8 +1,8 @@
 {
   "name": "simplewebrtc-data",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Ready-to-use WebRTC data channels via webrtc-data and signalmaster",
-  "main": "\"lib/simplewebrtc-data.js",
+  "main": "lib/simplewebrtc-data.js",
   "scripts": {
     "test": "jasmine-node tests"
   },
@@ -24,6 +24,12 @@
     "mockconsole": "0.0.1",
     "webrtcsupport": "~0.7.0",
     "wildemitter": "0.0.5",
-    "webrtc-data": "0.0.2"
+    "webrtc-data": "0.0.2",
+    "express": "3.x"
+  },
+  "devDependencies": {
+    "browserify": "2.x",
+    "uglify-js": "2.x",
+    "socket.io-client": "~0.9"
   }
 }
